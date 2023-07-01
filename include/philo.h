@@ -6,7 +6,7 @@
 /*   By: vchizhov <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/03 17:35:21 by vchizhov          #+#    #+#             */
-/*   Updated: 2023/06/03 17:39:02 by vchizhov         ###   ########.fr       */
+/*   Updated: 2023/06/27 17:37:34 by vchizhov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,9 @@ typedef struct s_info
 	pthread_mutex_t	*mutex;
 	pthread_mutex_t	wait;
 	pthread_mutex_t	check;
-	pthread_mutex_t	s_death;
+	pthread_mutex_t	m_death;
+	pthread_mutex_t	m_stop_print;
+	pthread_mutex_t	m_all_stop;	
 	long			number_of_philosophers;
 	long			time_to_die;
 	long			time_to_eat;
@@ -69,5 +71,7 @@ void	philo_sleep_and_think_print(t_philo *philo);
 void	*check_of_death_philo(void *data);
 int		philo_eat(t_philo *philo);
 void	*livephilo(void *data);
+void	func_for_death(t_info *info);
+void	check_sleep(t_philo *philo);
 
 #endif

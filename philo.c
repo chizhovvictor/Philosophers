@@ -6,7 +6,7 @@
 /*   By: vchizhov <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/03 17:28:51 by vchizhov          #+#    #+#             */
-/*   Updated: 2023/06/03 17:35:03 by vchizhov         ###   ########.fr       */
+/*   Updated: 2023/06/30 14:06:51 by vchizhov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,44 +14,31 @@
 
 void	philo_sleep_and_think_print(t_philo *philo)
 {
+	pthread_mutex_lock(&philo->info->m_death);
 	if (philo->info->death != 1)
 	{
+		pthread_mutex_unlock(&philo->info->m_death);
 		ft_print("is sleeping", philo, philo->id);
 		my_sleep(philo->info->time_to_sleep);
 		ft_print("is thinking", philo, philo->id);
-	}	
+	}
+	pthread_mutex_unlock(&philo->info->m_death);
 }
 
 void	*check_of_death_philo(void *data)
 {
 	t_info	*info;
-	int		i;
 
 	info = (t_info *)data;
+	pthread_mutex_lock(&info->m_death);
 	while (info->death != 1)
 	{
-		i = -1;
-		while (++i < info->number_of_philosophers)
-		{
-			if (info->stop_print != 1)
-			{
-				pthread_mutex_lock(&info->check);	
-				if ((timestamp_in_ms() - info->start_time \
-							- info->philo[i].last_eating) > info->time_to_die)
-				{
-					pthread_mutex_unlock(&info->check);
-					ft_print("died", &info->philo[i], info->philo[i].id);
-					info->death = 1;
-					info->stop_print = 1;
-					
-					break ;
-				}
-				pthread_mutex_unlock(&info->check);
-			}
-		}
+		pthread_mutex_unlock(&info->m_death);
+		func_for_death(info);
 		if (info->all_stop)
 			break ;
 	}
+	pthread_mutex_unlock(&info->m_death);
 	return (NULL);
 }
 
@@ -90,8 +77,10 @@ void	*livephilo(void *data)
 	philo = (t_philo *)data;
 	if (philo->id % 2 == 0)
 		usleep(15000);
+	pthread_mutex_lock(&philo->info->m_death);
 	while (philo->info->death != 1)
 	{
+		pthread_mutex_unlock(&philo->info->m_death);
 		if (!philo_eat(philo))
 			return (NULL);
 		if (philo->count_eat == \
@@ -100,11 +89,9 @@ void	*livephilo(void *data)
 			philo->info->all_stop = 1;
 			return (NULL);
 		}
-		if (philo->info->death != 1)
-		{
-			philo_sleep_and_think_print(philo);
-		}
+		check_sleep(philo);
 	}
+	pthread_mutex_unlock(&philo->info->m_death);
 	return (NULL);
 }
 

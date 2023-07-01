@@ -6,7 +6,7 @@
 /*   By: vchizhov <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/03 17:17:14 by vchizhov          #+#    #+#             */
-/*   Updated: 2023/06/03 17:25:05 by vchizhov         ###   ########.fr       */
+/*   Updated: 2023/06/30 14:07:10 by vchizhov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,11 @@ int	init_struct_mutex(t_info *info)
 		return (0);
 	if (pthread_mutex_init(&info->check, NULL))
 		return (0);
-	if (pthread_mutex_init(&info->s_death, NULL))
+	if (pthread_mutex_init(&info->m_death, NULL))
+		return (0);
+	if (pthread_mutex_init(&info->m_stop_print, NULL))
+		return (0);
+	if (pthread_mutex_init(&info->m_all_stop, NULL))
 		return (0);
 	info->mutex = malloc(sizeof(pthread_mutex_t) \
 			* info->number_of_philosophers);
@@ -67,12 +71,15 @@ int	init_struct_mutex(t_info *info)
 
 void	ft_print(char *str, t_philo *philo, int id)
 {
+	pthread_mutex_lock(&philo->info->m_stop_print);
 	pthread_mutex_lock(&philo->info->wait);
 	if (philo->info->stop_print != 1)
 	{
+		pthread_mutex_unlock(&philo->info->m_stop_print);
 		printf("%ld %d %s\n", timestamp_in_ms() - \
 				philo->info->start_time, id, str);
 	}
+	pthread_mutex_unlock(&philo->info->m_stop_print);
 	pthread_mutex_unlock(&philo->info->wait);
 }
 
@@ -110,7 +117,9 @@ void	mutex_destroy(t_info *info)
 	i = 0;
 	pthread_mutex_destroy(&info->wait);
 	pthread_mutex_destroy(&info->check);
-	pthread_mutex_destroy(&info->s_death);
+	pthread_mutex_destroy(&info->m_death);
+	pthread_mutex_destroy(&info->m_stop_print);
+	pthread_mutex_destroy(&info->m_all_stop);
 	while (i < info->number_of_philosophers)
 	{
 		pthread_mutex_destroy(&info->mutex[i]);

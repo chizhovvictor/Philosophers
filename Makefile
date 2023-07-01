@@ -1,12 +1,12 @@
 NAME = philo
 
-SRCS =	philo.c utils.c init.c
+SRCS =	philo.c utils.c init.c utils2.c
 
 HEADER = ./mandatory/include/
 
 OBJS = $(SRCS:.c=.o)
 
-CFLAGS = -Werror -Wextra -Wall #-fsanitize=thread -g 
+CFLAGS = -Werror -Wextra -Wall #-fsanitize=thread -g
 
 all: $(NAME)
 
